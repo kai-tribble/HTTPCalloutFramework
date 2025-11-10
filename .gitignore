@@ -52,3 +52,5 @@ force-app/main/default/staticresources
 force-app/main/default/tabs
 force-app/main/default/triggers
 force-app/main/default/lwc
+
+.sf/

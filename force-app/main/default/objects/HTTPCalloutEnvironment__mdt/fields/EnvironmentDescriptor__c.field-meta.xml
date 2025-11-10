@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>EnvironmentDescriptor__c</fullName>
+    <description>Additional descriptor for the environment (e.g., "1", "2", "A", "B", "Primary", "Secondary"). Used to differentiate between multiple environments of the same type.</description>
+    <externalId>false</externalId>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Enter a text value to differentiate between multiple environments of the same type (e.g., Dev1, Dev2, Staging-A, Production-Primary).</inlineHelpText>
+    <label>Environment Descriptor</label>
+    <length>255</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>
+

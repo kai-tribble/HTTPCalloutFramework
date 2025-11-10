@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>SalesforceDomain__c</fullName>
+    <description>Salesforce domain used to match the current org's domain. Used in Apex to automatically select the correct environment configuration based on the current Salesforce domain.</description>
+    <externalId>false</externalId>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Enter the Salesforce domain (e.g., "mycompany.my.salesforce.com" or "mycompany--sandbox.sandbox.my.salesforce.com"). This will be used to automatically match the current org's domain with the appropriate environment configuration.</inlineHelpText>
+    <label>Salesforce Domain</label>
+    <length>255</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>
+

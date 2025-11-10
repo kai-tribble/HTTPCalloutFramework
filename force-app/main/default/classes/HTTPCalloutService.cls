@@ -9,17 +9,29 @@
 */
 public class HTTPCalloutService {
 
-    HTTPCalloutConfiguration__mdt calloutMetadata;
-    String endpointURL, requestMethod, requestBody, requestCertificate;
-    Blob requestBodyAsBlob;
-    Dom.Document requestBodyAsDocument;
-    Integer requestTimeout;
-    Boolean isCompressedRequest;
-    Map<String, String> urlParametersMap;
-    Map<String, String> headerParametersMap;
-    static final String TYPE_URL_PARAMETERS = 'URL_PARAMETERS';
-    static final String TYPE_HEADER_PARAMETERS = 'HEADER_PARAMETERS';
-    HTTPRequest request;
+    private HTTPCalloutConfiguration__mdt calloutMetadata;
+    private HTTPCalloutEnvironment__mdt environmentOverride;
+    private String endpointURL;
+    private String requestMethod;
+    private String requestBody;
+    private String requestCertificate;
+    private String namedCredential;
+    private Blob requestBodyAsBlob;
+    private Dom.Document requestBodyAsDocument;
+    private Integer requestTimeout;
+    private Boolean isCompressedRequest;
+    private Boolean isActive;
+    private Boolean isLoggingRequest;
+    private Boolean isLoggingResponse;
+    private Boolean retryOnFailure;
+    private Integer maxRetries;
+    private Integer retryDelay;
+    private Set<Integer> successCodes;
+    private Map<String, String> urlParametersMap;
+    private Map<String, String> headerParametersMap;
+    private static final String TYPE_URL_PARAMETERS = 'URL_PARAMETERS';
+    private static final String TYPE_HEADER_PARAMETERS = 'HEADER_PARAMETERS';
+    private HTTPRequest request;
 
     /*
     * Getters and Setters - Begin
@@ -88,6 +100,58 @@ public class HTTPCalloutService {
 		this.isCompressedRequest = isCompressedRequest;
 	}
 
+	public String getNamedCredential() {
+		return namedCredential;
+	}
+
+	public void setNamedCredential(String namedCredential) {
+		this.namedCredential = namedCredential;
+	}
+
+	public Boolean getIsActive() {
+		return isActive;
+	}
+
+	public Boolean getRetryOnFailure() {
+		return retryOnFailure;
+	}
+
+	public Integer getMaxRetries() {
+		return maxRetries;
+	}
+
+	public Integer getRetryDelay() {
+		return retryDelay;
+	}
+
+    public Boolean getIsLoggingRequest() {
+        return isLoggingRequest;
+    }
+
+    public Boolean getIsLoggingResponse() {
+        return isLoggingResponse;
+    }
+
+    public void setIsLoggingRequest(Boolean isLoggingRequest) {
+        this.isLoggingRequest = isLoggingRequest;
+    }
+
+    public void setIsLoggingResponse(Boolean isLoggingResponse) {
+        this.isLoggingResponse = isLoggingResponse;
+    }
+
+	public HTTPCalloutConfiguration__mdt getCalloutMetadata() {
+		return calloutMetadata;
+	}
+
+	public HTTPCalloutEnvironment__mdt getEnvironmentOverride() {
+		return environmentOverride;
+	}
+
+	public Set<Integer> getSuccessCodes() {
+		return successCodes;
+	}
+
     public String getHeaderParameter(String key) {
         return headerParametersMap.get(key);
     }
@@ -137,20 +201,52 @@ public class HTTPCalloutService {
     }
 
     /*
-    * Constructor with Custom Metadata
+    * Constructor with Custom Metadata and automatic environment detection
     */
     public HTTPCalloutService(String customMetadataName) {
         try {
             calloutMetadata = [
                 SELECT Method__c, URLParameters__c, HeaderParameters__c, Endpoint__c,
-                Body__c, Timeout__c, CertificateName__c, IsCompressed__c
+                Body__c, Timeout__c, CertificateName__c, IsCompressed__c,
+                NamedCredential__c, IsActive__c, RetryOnFailure__c, MaxRetries__c, RetryDelay__c,
+                LogRequest__c, LogResponse__c, SuccessCodes__c,
+                (SELECT EndpointOverride__c, NamedCredentialOverride__c, IsActive__c,
+                 TimeoutOverride__c, HeaderParametersOverride__c, URLParametersOverride__c,
+                 BodyOverride__c, CertificateNameOverride__c, EnvironmentName__c,
+                 SalesforceDomain__c, EnvironmentDescriptor__c
+                 FROM HTTPCalloutEnvironments__r
+                 WHERE IsActive__c = true)
                 FROM HTTPCalloutConfiguration__mdt
                 WHERE DeveloperName =:customMetadataName
+                AND IsActive__c = true
             ];
-        } catch (Exception e) {
-            throw new HTTPCalloutFrameworkException(HTTPCalloutFrameworkException.CUSTOM_METADATA_NOT_FOUND);
+        } catch (QueryException e) {
+            throw new HTTPCalloutFrameworkException(
+                HTTPCalloutFrameworkException.CUSTOM_METADATA_NOT_FOUND
+            );
+        }
+        if(calloutMetadata.HTTPCalloutEnvironments__r != null && !calloutMetadata.HTTPCalloutEnvironments__r.isEmpty()) {
+            this.environmentOverride = getEnvironmentOverrideFromCollection();
         }
         initialize();
+    }
+
+    /*
+    * Get environment override from the collection retrieved in the parent query
+    * Validates that only one active environment exists per configuration
+    */
+    private HTTPCalloutEnvironment__mdt getEnvironmentOverrideFromCollection() {
+        if(calloutMetadata.HTTPCalloutEnvironments__r == null || calloutMetadata.HTTPCalloutEnvironments__r.isEmpty()) {
+            return null;
+        }
+        
+        List<HTTPCalloutEnvironment__mdt> envOverrides = calloutMetadata.HTTPCalloutEnvironments__r;
+        // Validate that only one active environment exists
+        if(envOverrides.size() > 1) {
+            throw new HTTPCalloutFrameworkException(HTTPCalloutFrameworkException.MULTIPLE_ACTIVE_ENVIRONMENTS);
+        }
+
+        return envOverrides.get(0);
     }
 
     /*
@@ -159,15 +255,88 @@ public class HTTPCalloutService {
     private void initialize() {
         urlParametersMap = new Map<String, String>();
         headerParametersMap = new Map<String, String>();
+        successCodes = new Set<Integer>();
         if(calloutMetadata != null) {
+            // Initialize from metadata
             endpointURL = calloutMetadata.Endpoint__c;
             requestMethod = calloutMetadata.Method__c;
             requestBody = calloutMetadata.Body__c;
-            requestTimeout = Integer.valueOf(calloutMetadata.Timeout__c);
+            requestTimeout = calloutMetadata.Timeout__c != null ? Integer.valueOf(calloutMetadata.Timeout__c) : null;
             isCompressedRequest = calloutMetadata.IsCompressed__c;
             requestCertificate = calloutMetadata.CertificateName__c;
+            namedCredential = calloutMetadata.NamedCredential__c;
+            isActive = calloutMetadata.IsActive__c;
+            retryOnFailure = calloutMetadata.RetryOnFailure__c;
+            maxRetries = calloutMetadata.MaxRetries__c != null ? Integer.valueOf(calloutMetadata.MaxRetries__c) : 3;
+            retryDelay = calloutMetadata.RetryDelay__c != null ? Integer.valueOf(calloutMetadata.RetryDelay__c) : 1000;
+            successCodes = parseSuccessCodes(calloutMetadata.SuccessCodes__c);
+            
             setUrlOrHeaderParameters(TYPE_URL_PARAMETERS, calloutMetadata.URLParameters__c);
             setUrlOrHeaderParameters(TYPE_HEADER_PARAMETERS, calloutMetadata.HeaderParameters__c);
+            
+            // Apply environment overrides if present
+            if(environmentOverride != null) {
+                applyEnvironmentOverrides();
+            }
+        }
+    }
+
+    /*
+    * Parse comma-separated success codes
+    */
+    private Set<Integer> parseSuccessCodes(String successCodesString) {
+        Set<Integer> successCodesSet = new Set<Integer>(); 
+        if(String.isNotEmpty(successCodesString)) {
+            List<String> codeStrings = successCodesString.split(',');
+            for(String codeStr : codeStrings) {
+                String trimmedCode = codeStr.trim();
+                if(String.isNotBlank(trimmedCode)) {
+                    try {
+                        Integer code = Integer.valueOf(trimmedCode);
+                        successCodesSet.add(code);
+                    } catch (TypeException e) {
+                        // Skip invalid codes
+                    }
+                }
+            }
+        }
+        return successCodesSet;
+    }
+
+    /*
+    * Check if the HTTP response status code indicates success
+    */
+    public Boolean isSuccessful(HTTPResponse response) {
+        if(response == null) {
+            return false;
+        }
+        return successCodes.contains(response.getStatusCode());
+    }
+
+    /*
+    * Apply environment-specific overrides
+    */
+    private void applyEnvironmentOverrides() {
+        if(String.isNotEmpty(environmentOverride.EndpointOverride__c)) {
+            endpointURL = environmentOverride.EndpointOverride__c;
+        }
+        if(String.isNotEmpty(environmentOverride.NamedCredentialOverride__c)) {
+            namedCredential = environmentOverride.NamedCredentialOverride__c;
+        }
+        if(environmentOverride.TimeoutOverride__c != null) {
+            requestTimeout = Integer.valueOf(environmentOverride.TimeoutOverride__c);
+        }
+        if(String.isNotEmpty(environmentOverride.BodyOverride__c)) {
+            requestBody = environmentOverride.BodyOverride__c;
+        }
+        if(String.isNotEmpty(environmentOverride.CertificateNameOverride__c)) {
+            requestCertificate = environmentOverride.CertificateNameOverride__c;
+        }
+        if(String.isNotEmpty(environmentOverride.HeaderParametersOverride__c)) {
+            setUrlOrHeaderParameters(TYPE_HEADER_PARAMETERS, environmentOverride.HeaderParametersOverride__c);
+        }
+        if(String.isNotEmpty(environmentOverride.URLParametersOverride__c)) {
+            setUrlOrHeaderParameters(TYPE_URL_PARAMETERS, environmentOverride.URLParametersOverride__c);
         }
     }
 
@@ -204,39 +373,26 @@ public class HTTPCalloutService {
     }
 
     /*
-    * This method is used to append the URL parameters at the end of URL
-    */
-    private void appendURLParameters() {
-        Set<String> urlParamKeys = urlParametersMap.keySet();
-        if(!urlParamKeys.isEmpty()) {
-            endpointURL += '?';
-            for(String urlParamKey : urlParamKeys) {
-                endpointURL += urlParamKey + '=' + urlParametersMap.get(urlParamKey) + '&';
-            }
-            endpointURL = endpointURL.substringBeforeLast('&');
-        }
-    }
-
-    /*
-    * This method is used to set Header parameters using headerParametersMap
-    */
-    private void addHeaderParameters() {
-        for(String key : headerParametersMap.keySet()) {
-            request.setHeader(key, headerParametersMap.get(key));
-        }
-    }
-
-    /*
     * This method is used to form HTTP Request
     */
     public void formHTTPRequest() {
         request = new HTTPRequest();
         addHeaderParameters();
-        if(String.isNotEmpty(endpointURL)) {
-            endpointURL = endpointURL.substringBefore('?');
-            appendURLParameters();
-            request.setEndpoint(endpointURL);
+        
+        String baseEndpoint;
+
+        // prioritize named credential if available
+        if(String.isNotEmpty(namedCredential)) {
+            baseEndpoint = 'callout:' + namedCredential;
+        } else {
+            baseEndpoint = endpointURL.substringBefore('?');
         }
+
+        if (String.isNotEmpty(baseEndpoint)) {
+            appendURLParameters();
+            request.setEndpoint(baseEndpoint);
+        }
+        
         if(String.isNotEmpty(requestMethod)) {
             request.setMethod(requestMethod);
         }
@@ -259,27 +415,82 @@ public class HTTPCalloutService {
     }
 
     /*
+    * This method is used to set Header parameters using headerParametersMap
+    */
+    private void addHeaderParameters() {
+        for(String key : headerParametersMap.keySet()) {
+            request.setHeader(key, headerParametersMap.get(key));
+        }
+    }
+
+
+    /*
+    * This method is used to append the URL parameters at the end of URL
+    */
+    private void appendURLParameters() {
+        Set<String> urlParamKeys = urlParametersMap.keySet();
+        if(!urlParamKeys.isEmpty()) {
+            endpointURL += '?';
+            for(String urlParamKey : urlParamKeys) {
+                endpointURL += urlParamKey + '=' + urlParametersMap.get(urlParamKey) + '&';
+            }
+            endpointURL = endpointURL.substringBeforeLast('&');
+        }
+    }
+
+    /*
     * This method forms and returns the HTTP Request without sending (for debugging purposes)
     */
     public HTTPRequest getRequest() {
         formHTTPRequest();
+        if(isLoggingRequest) {
+            // TODO: Replace with Triton Logging
+            System.debug('Request: ' + request);
+        }
         return request;
     }
 
     /*
-    * This method is used to send HTTP Request and return the response
+    * This method is used to send HTTP Request with retry logic
     */
-    public HTTPResponse sendRequest() {
-        formHTTPRequest();
-        Http http = new Http();
-        return http.send(request);
-    }
-
-    /*
-    * This method is used to send HTTP Request received in parameter and return the response
-    */
-    public HTTPResponse sendRequest(HTTPRequest request) {
-        Http http = new Http();
-        return http.send(request);
+    private HTTPResponse sendRequest() {
+        HTTPResponse response = new HTTPResponse();
+        Integer attempts = 0;
+        Integer maxAttempts = maxRetries ?? 0 + 1; // maxRetries is number of retries, so total attempts = retries + 1
+        while(attempts < maxAttempts) {
+            formHTTPRequest();
+            Http http = new Http();
+            try {
+                response = http.send(request);
+            } catch (Exception ex) {
+                // TODO: Replace with Triton Logging
+                System.debug('Error: ' + ex.getMessage());
+                throw new HTTPCalloutFrameworkException(ex.getMessage());
+            }
+            if(isLoggingResponse) {
+                // TODO: Replace with Triton Logging
+                System.debug('Response: ' + response);
+            }
+            // If successful based on configured success codes, return response
+            if(isSuccessful(response)) {
+                return response;
+            }
+            
+            attempts++;
+            
+            // If not the last attempt, wait before retrying
+            if(retryDelay != null && retryDelay > 0) {
+                // TODO: Replace with Triton Logging
+                System.debug('Waiting for ' + retryDelay + ' milliseconds before retrying...');
+                Long timeDiff = 0;
+                DateTime firstTime = System.now();
+                do {
+                    timeDiff = System.now().getTime() - firstTime.getTime();
+                }
+                while(timeDiff <= retryDelay);
+            }
+        }
+        
+        return response;
     }
 }

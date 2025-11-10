@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>RetryDelayLimit</fullName>
+    <active>true</active>
+    <description>Retry delay cannot be greater than 10000</description>
+    <errorConditionFormula>RetryDelay__c &gt; 10000</errorConditionFormula>
+    <errorMessage>Maximum retry delay you can specify is 10000 milliseconds</errorMessage>
+</ValidationRule>

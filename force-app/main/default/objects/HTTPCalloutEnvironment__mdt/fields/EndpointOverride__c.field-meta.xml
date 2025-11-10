@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>EndpointOverride__c</fullName>
+    <description>Environment-specific endpoint URL override</description>
+    <externalId>false</externalId>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Environment-specific endpoint URL override</inlineHelpText>
+    <label>Endpoint Override</label>
+    <required>false</required>
+    <type>Url</type>
+</CustomField>
+
