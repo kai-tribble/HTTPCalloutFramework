@@ -36,121 +36,143 @@ public class HTTPCalloutService {
     /*
     * Getters and Setters - Begin
     */
-	public String getEndpointURL() {
-		return endpointURL;
-	}
+    // Start of Selection
 
-	public void setEndpointURL(String endpointURL) {
-		this.endpointURL = endpointURL;
-	}
+    public String getEndpointURL() {
+        return endpointURL;
+    }
 
-	public String getRequestMethod() {
-		return requestMethod;
-	}
+    public void setEndpointURL(String endpointURL) {
+        this.endpointURL = endpointURL;
+    }
 
-	public void setRequestMethod(String requestMethod) {
-		this.requestMethod = requestMethod;
-	}
+    public String getRequestMethod() {
+        return requestMethod;
+    }
 
-	public String getRequestBody() {
-		return requestBody;
-	}
+    public void setRequestMethod(String requestMethod) {
+        this.requestMethod = requestMethod;
+    }
 
-	public void setRequestBody(String requestBody) {
-		this.requestBody = requestBody;
-	}
+    public String getRequestBody() {
+        return requestBody;
+    }
 
-	public Blob getRequestBodyAsBlob() {
-		return requestBodyAsBlob;
-	}
+    public void setRequestBody(String requestBody) {
+        this.requestBody = requestBody;
+    }
 
-	public void setRequestBodyAsBlob(Blob requestBodyAsBlob) {
-		this.requestBodyAsBlob = requestBodyAsBlob;
-	}
+    public Blob getRequestBodyAsBlob() {
+        return requestBodyAsBlob;
+    }
 
-	public Dom.Document getRequestBodyAsDocument() {
-		return requestBodyAsDocument;
-	}
+    public void setRequestBodyAsBlob(Blob requestBodyAsBlob) {
+        this.requestBodyAsBlob = requestBodyAsBlob;
+    }
 
-	public void setRequestBodyAsDocument(Dom.Document requestBodyAsDocument) {
-		this.requestBodyAsDocument = requestBodyAsDocument;
-	}
+    public Dom.Document getRequestBodyAsDocument() {
+        return requestBodyAsDocument;
+    }
 
-	public String getRequestCertificate() {
-		return requestCertificate;
-	}
+    public void setRequestBodyAsDocument(Dom.Document requestBodyAsDocument) {
+        this.requestBodyAsDocument = requestBodyAsDocument;
+    }
 
-	public void setRequestCertificate(String requestCertificate) {
-		this.requestCertificate = requestCertificate;
-	}
+    public String getRequestCertificate() {
+        return requestCertificate;
+    }
 
-	public Integer getRequestTimeout() {
-		return requestTimeout;
-	}
+    public void setRequestCertificate(String requestCertificate) {
+        this.requestCertificate = requestCertificate;
+    }
 
-	public void setRequestTimeout(Integer requestTimeout) {
-		this.requestTimeout = requestTimeout;
-	}
+    public Integer getRequestTimeout() {
+        return requestTimeout;
+    }
 
-	public Boolean getIsCompressedRequest() {
-		return isCompressedRequest;
-	}
+    public void setRequestTimeout(Integer requestTimeout) {
+        this.requestTimeout = requestTimeout;
+    }
 
-	public void setIsCompressedRequest(Boolean isCompressedRequest) {
-		this.isCompressedRequest = isCompressedRequest;
-	}
+    public Boolean getIsCompressedRequest() {
+        return isCompressedRequest;
+    }
 
-	public String getNamedCredential() {
-		return namedCredential;
-	}
+    public void setIsCompressedRequest(Boolean isCompressedRequest) {
+        this.isCompressedRequest = isCompressedRequest;
+    }
 
-	public void setNamedCredential(String namedCredential) {
-		this.namedCredential = namedCredential;
-	}
+    public String getNamedCredential() {
+        return namedCredential;
+    }
 
-	public Boolean getIsActive() {
-		return isActive;
-	}
+    public void setNamedCredential(String namedCredential) {
+        this.namedCredential = namedCredential;
+    }
 
-	public Boolean getRetryOnFailure() {
-		return retryOnFailure;
-	}
+    public Boolean getIsActive() {
+        return isActive;
+    }
 
-	public Integer getMaxRetries() {
-		return maxRetries;
-	}
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
 
-	public Integer getRetryDelay() {
-		return retryDelay;
-	}
+    public Boolean getRetryOnFailure() {
+        return retryOnFailure;
+    }
+
+    public void setRetryOnFailure(Boolean retryOnFailure) {
+        this.retryOnFailure = retryOnFailure;
+    }
+
+    public Integer getMaxRetries() {
+        return maxRetries;
+    }
+
+    public void setMaxRetries(Integer maxRetries) {
+        this.maxRetries = maxRetries;
+    }
+
+    public Integer getRetryDelay() {
+        return retryDelay;
+    }
+
+    public void setRetryDelay(Integer retryDelay) {
+        this.retryDelay = retryDelay;
+    }
 
     public Boolean getIsLoggingRequest() {
         return isLoggingRequest;
-    }
-
-    public Boolean getIsLoggingResponse() {
-        return isLoggingResponse;
     }
 
     public void setIsLoggingRequest(Boolean isLoggingRequest) {
         this.isLoggingRequest = isLoggingRequest;
     }
 
+    public Boolean getIsLoggingResponse() {
+        return isLoggingResponse;
+    }
+
     public void setIsLoggingResponse(Boolean isLoggingResponse) {
         this.isLoggingResponse = isLoggingResponse;
     }
 
-	public HTTPCalloutConfiguration__mdt getCalloutMetadata() {
-		return calloutMetadata;
-	}
+    public HTTPCalloutConfiguration__mdt getCalloutMetadata() {
+        return calloutMetadata;
+    }
 
-	public HTTPCalloutEnvironment__mdt getEnvironmentOverride() {
-		return environmentOverride;
-	}
+    public HTTPCalloutEnvironment__mdt getEnvironmentOverride() {
+        return environmentOverride;
+    }
 
-	public Set<Integer> getSuccessCodes() {
-		return successCodes;
-	}
+    public Set<Integer> getSuccessCodes() {
+        return successCodes;
+    }
+
+    public void setSuccessCodes(Set<Integer> successCodes) {
+        this.successCodes = successCodes;
+    }
 
     public String getHeaderParameter(String key) {
         return headerParametersMap.get(key);
@@ -235,11 +257,7 @@ public class HTTPCalloutService {
     * Get environment override from the collection retrieved in the parent query
     * Validates that only one active environment exists per configuration
     */
-    private HTTPCalloutEnvironment__mdt getEnvironmentOverrideFromCollection() {
-        if(calloutMetadata.HTTPCalloutEnvironments__r == null || calloutMetadata.HTTPCalloutEnvironments__r.isEmpty()) {
-            return null;
-        }
-        
+    private HTTPCalloutEnvironment__mdt getEnvironmentOverrideFromCollection() {        
         List<HTTPCalloutEnvironment__mdt> envOverrides = calloutMetadata.HTTPCalloutEnvironments__r;
         // Validate that only one active environment exists
         if(envOverrides.size() > 1) {
@@ -261,14 +279,16 @@ public class HTTPCalloutService {
             endpointURL = calloutMetadata.Endpoint__c;
             requestMethod = calloutMetadata.Method__c;
             requestBody = calloutMetadata.Body__c;
-            requestTimeout = calloutMetadata.Timeout__c != null ? Integer.valueOf(calloutMetadata.Timeout__c) : null;
+            requestTimeout = Integer.valueOf(calloutMetadata.Timeout__c);
             isCompressedRequest = calloutMetadata.IsCompressed__c;
             requestCertificate = calloutMetadata.CertificateName__c;
             namedCredential = calloutMetadata.NamedCredential__c;
             isActive = calloutMetadata.IsActive__c;
             retryOnFailure = calloutMetadata.RetryOnFailure__c;
-            maxRetries = calloutMetadata.MaxRetries__c != null ? Integer.valueOf(calloutMetadata.MaxRetries__c) : 3;
-            retryDelay = calloutMetadata.RetryDelay__c != null ? Integer.valueOf(calloutMetadata.RetryDelay__c) : 1000;
+            isLoggingRequest = calloutMetadata.LogRequest__c;
+            isLoggingResponse = calloutMetadata.LogResponse__c;
+            maxRetries = Integer.valueOf(calloutMetadata.MaxRetries__c);
+            retryDelay = Integer.valueOf(calloutMetadata.RetryDelay__c);
             successCodes = parseSuccessCodes(calloutMetadata.SuccessCodes__c);
             
             setUrlOrHeaderParameters(TYPE_URL_PARAMETERS, calloutMetadata.URLParameters__c);
@@ -307,10 +327,7 @@ public class HTTPCalloutService {
     * Check if the HTTP response status code indicates success
     */
     public Boolean isSuccessful(HTTPResponse response) {
-        if(response == null) {
-            return false;
-        }
-        return successCodes.contains(response.getStatusCode());
+        return response == null ? false : successCodes.contains(response.getStatusCode());
     }
 
     /*
@@ -379,18 +396,16 @@ public class HTTPCalloutService {
         request = new HTTPRequest();
         addHeaderParameters();
         
-        String baseEndpoint;
-
         // prioritize named credential if available
         if(String.isNotEmpty(namedCredential)) {
-            baseEndpoint = 'callout:' + namedCredential;
+            endpointURL = 'callout:' + namedCredential;
         } else {
-            baseEndpoint = endpointURL.substringBefore('?');
+            endpointURL = endpointURL.substringBefore('?');
         }
 
-        if (String.isNotEmpty(baseEndpoint)) {
+        if (String.isNotEmpty(endpointURL)) {
             appendURLParameters();
-            request.setEndpoint(baseEndpoint);
+            request.setEndpoint(endpointURL);
         }
         
         if(String.isNotEmpty(requestMethod)) {
@@ -451,14 +466,27 @@ public class HTTPCalloutService {
     }
 
     /*
+    * This method is used to send HTTP Request received in parameter and return the response
+    */
+    public HTTPResponse sendRequest(HTTPRequest request) {
+        Http http = new Http();
+        request = request;
+        return sendRequest();
+    }
+
+    /*
     * This method is used to send HTTP Request with retry logic
     */
-    private HTTPResponse sendRequest() {
+    public HTTPResponse sendRequest() {
         HTTPResponse response = new HTTPResponse();
         Integer attempts = 0;
         Integer maxAttempts = maxRetries ?? 0 + 1; // maxRetries is number of retries, so total attempts = retries + 1
         while(attempts < maxAttempts) {
             formHTTPRequest();
+            if(isLoggingRequest) {
+                // TODO: Replace with Triton Logging
+                System.debug('Request: ' + request);
+            }
             Http http = new Http();
             try {
                 response = http.send(request);
@@ -479,7 +507,7 @@ public class HTTPCalloutService {
             attempts++;
             
             // If not the last attempt, wait before retrying
-            if(retryDelay != null && retryDelay > 0) {
+            if(retryOnFailure && (retryDelay != null && retryDelay > 0)) {
                 // TODO: Replace with Triton Logging
                 System.debug('Waiting for ' + retryDelay + ' milliseconds before retrying...');
                 Long timeDiff = 0;

@@ -23,12 +23,44 @@ key2:value2
 key3:value3</value>
     </values>
     <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
         <field>IsCompressed__c</field>
         <value xsi:type="xsd:boolean">true</value>
     </values>
     <values>
+        <field>LogRequest__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>LogResponse__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>MaxRetries__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
         <field>Method__c</field>
         <value xsi:type="xsd:string">POST</value>
+    </values>
+    <values>
+        <field>NamedCredential__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>RetryDelay__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>RetryOnFailure__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>SuccessCodes__c</field>
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>Timeout__c</field>

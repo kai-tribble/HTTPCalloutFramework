@@ -16,12 +16,14 @@ public class HTTPCalloutServiceTest {
     * Initializing constants
     */
     private static final String CUSTOM_METADATA_NAME = 'TestMetadata';
+    private static final String CUSTOM_METADATA_NAME_WITH_OVERRIDES = 'TestMetadataWithOverrides';
     private static final String ENDPOINT = 'https://www.test.com';
     private static final String METHOD = 'POST';
     private static final String REQUEST_BODY = '{"input":"Test Input"}';
     private static final String REQUEST_BODY_XML = '<input>Test Input</input>';
     private static final String RESPONSE_BODY = '{"output":"Test Output"}';
     private static final Integer RESPONSE_SUCCESS = 200;
+    private static final Integer RESPONSE_FAILURE = 500;
     private static final Integer TIMEOUT = 120000;
     private static final Boolean ISCOMPRESSED = true;
     private static final String KEY1 = 'key1';
@@ -137,6 +139,14 @@ public class HTTPCalloutServiceTest {
         System.assertEquals(TIMEOUT, service.getRequestTimeout());
         service.setIsCompressedRequest(ISCOMPRESSED);
         System.assertEquals(ISCOMPRESSED, service.getIsCompressedRequest());
+        service.setIsLoggingRequest(true);
+        System.assertEquals(true, service.getIsLoggingRequest());
+        service.setIsLoggingResponse(true);
+        System.assertEquals(true, service.getIsLoggingResponse());
+        service.setIsActive(true);
+        service.setRetryOnFailure(false);
+        service.setSuccessCodes(new Set<Integer>{RESPONSE_SUCCESS});
+        System.assertEquals(new Set<Integer>{RESPONSE_SUCCESS}, service.getSuccessCodes());
         service.setHeaderParameter(KEY1, VALUE1);
         System.assertEquals(VALUE1, service.getHeaderParameter(KEY1));
         service.setHeaderParameter(KEY2, VALUE2);
@@ -190,6 +200,50 @@ public class HTTPCalloutServiceTest {
         } catch(Exception e) {
             System.assertEquals(HTTPCalloutFrameworkException.MOCK_NOT_FOUND, e.getMessage());
         }
+        Test.stopTest();
+    }
+
+    @isTest
+    public static void testWithCustomMetadataAndRetry() {
+        Test.startTest();
+        HTTPCalloutServiceMock testMock = new HTTPCalloutServiceMock(RESPONSE_FAILURE, RESPONSE_BODY);
+        Test.setMock(HTTPCalloutMock.class, testMock);
+        HTTPCalloutService service = new HTTPCalloutService(CUSTOM_METADATA_NAME);
+        service.setRetryOnFailure(true);
+        System.assertEquals(true, service.getRetryOnFailure());
+        service.setMaxRetries(1);
+        System.assertEquals(1, service.getMaxRetries());
+        service.setRetryDelay(1000);
+        System.assertEquals(1000, service.getRetryDelay());
+        HTTPResponse testResponse = service.sendRequest();
+        System.assertEquals(RESPONSE_FAILURE, testResponse.getStatusCode());
+        System.assertEquals(RESPONSE_BODY, testResponse.getBody());
+        Test.stopTest();
+    }
+
+    @isTest
+    public static void testWithCustomMetadataAndNamedCredential() {
+        Test.startTest();
+        HTTPCalloutServiceMock testMock = new HTTPCalloutServiceMock(RESPONSE_SUCCESS, RESPONSE_BODY);
+        Test.setMock(HTTPCalloutMock.class, testMock);
+        HTTPCalloutService service = new HTTPCalloutService(CUSTOM_METADATA_NAME);
+        service.setNamedCredential('TestCredential');
+        System.assertEquals('TestCredential', service.getNamedCredential());
+        HTTPResponse testResponse = service.sendRequest();
+        System.assertEquals(RESPONSE_SUCCESS, testResponse.getStatusCode());
+        System.assertEquals(RESPONSE_BODY, testResponse.getBody());
+        Test.stopTest();
+    }
+
+    @isTest
+    public static void testWithCustomMetadataAndEnvironmentOverride() {
+        Test.startTest();
+        HTTPCalloutServiceMock testMock = new HTTPCalloutServiceMock(RESPONSE_SUCCESS, RESPONSE_BODY);
+        Test.setMock(HTTPCalloutMock.class, testMock);
+        HTTPCalloutService service = new HTTPCalloutService(CUSTOM_METADATA_NAME_WITH_OVERRIDES);
+        HTTPResponse testResponse = service.sendRequest();
+        System.assertEquals(RESPONSE_SUCCESS, testResponse.getStatusCode());
+        System.assertEquals(RESPONSE_BODY, testResponse.getBody());
         Test.stopTest();
     }
 }
